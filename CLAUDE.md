@@ -41,7 +41,6 @@ General: Follow standard conventions
 ## Recent Changes
 - 009-green-test-mandatory: Added N/A（Markdown テンプレート修正のみ）
 - 008-quality-guard: Added TypeScript 5 (strict mode) + Next.js 14 (App Router), React 18, Zod, Tailwind CSS 3
-- 007-separate-sample-production: Added TypeScript 5 + React 18 + Next.js 14 (App Router) + Next.js App Router, Tailwind CSS 3
 
 
 
