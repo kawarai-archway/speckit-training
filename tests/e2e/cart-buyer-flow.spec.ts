@@ -958,3 +958,238 @@ test.describe('User Story 3: カート内の数量を変更する - E2E Tests', 
     // await expect(page.locator('[data-testid="loading-indicator"]')).not.toBeVisible();
   });
 });
+/**
+ * User Story 5: 未ログイン時のカート追加リダイレクト - E2E Tests
+ * TDD Red Phase - これらのテストは最初は FAIL する必要がある
+ */
+test.describe('User Story 5: 未ログイン時のカート追加リダイレクト - E2E Tests', () => {
+  test.beforeEach(async ({ page }) => {
+    // 未ログイン状態を確保するため、ログインしない
+    // 既存のセッション情報をクリア
+    await page.context().clearCookies();
+    await page.context().clearPermissions();
+  });
+
+  test('未ログイン状態で商品詳細ページが表示される', async ({ page }) => {
+    // 商品詳細ページに直接アクセス
+    await page.goto('/catalog/product-1');
+
+    // 商品情報が表示されることを確認（ログイン状態に関係なく）
+    await expect(page.locator('[data-testid="product-name"]')).toBeVisible();
+    await expect(page.locator('[data-testid="product-price"]')).toBeVisible();
+    await expect(page.locator('[data-testid="product-description"]')).toBeVisible();
+
+    // カートに追加ボタンが表示されることを確認
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await expect(addToCartButton).toBeVisible();
+    await expect(addToCartButton).toBeEnabled();
+  });
+
+  test('未ログイン時にカートに追加ボタンを押すとログインページにリダイレクトされる', async ({ page }) => {
+    // 商品詳細ページに移動
+    await page.goto('/catalog/product-1');
+
+    // 現在のURLを記録
+    const currentUrl = page.url();
+
+    // カートに追加ボタンをクリック
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await addToCartButton.click();
+
+    // リダイレクトメッセージが一時的に表示される
+    await expect(page.locator('text=ログインページに移動します')).toBeVisible({ timeout: 5000 });
+
+    // ログインページにリダイレクトされることを確認
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+
+    // returnToパラメータが正しく設定されることを確認
+    expect(page.url()).toContain('returnTo=');
+    expect(decodeURIComponent(page.url())).toContain('/catalog/product-1');
+  });
+
+  test('ログインページのreturnToパラメータが正しく設定される', async ({ page }) => {
+    // 特定の商品ページからカート追加を試行
+    await page.goto('/catalog/special-product-123');
+
+    // カートに追加ボタンをクリック
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await addToCartButton.click();
+
+    // ログインページにリダイレクトされることを確認
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+
+    // returnToパラメータに元のURLが含まれることを確認
+    const currentUrl = page.url();
+    const urlParams = new URLSearchParams(currentUrl.split('?')[1]);
+    const returnTo = urlParams.get('returnTo');
+    
+    expect(returnTo).toBeTruthy();
+    expect(returnTo).toContain('/catalog/special-product-123');
+  });
+
+  test('クエリパラメータ付きのURLでもreturnToが正しく設定される', async ({ page }) => {
+    // クエリパラメータ付きの商品ページに移動
+    await page.goto('/catalog/product-1?variant=red&size=large');
+
+    // カートに追加ボタンをクリック
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await addToCartButton.click();
+
+    // ログインページにリダイレクトされることを確認
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+
+    // returnToにクエリパラメータも含まれることを確認
+    const currentUrl = page.url();
+    const decodedUrl = decodeURIComponent(currentUrl);
+    expect(decodedUrl).toContain('/catalog/product-1');
+    expect(decodedUrl).toContain('variant=red');
+    expect(decodedUrl).toContain('size=large');
+  });
+
+  test('ログイン成功後に元の商品ページに戻る', async ({ page }) => {
+    // 商品詳細ページからカート追加を試行
+    await page.goto('/catalog/product-1');
+    
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await addToCartButton.click();
+
+    // ログインページにリダイレクトされることを確認
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+
+    // ログイン処理
+    await page.fill('[data-testid="email"]', 'buyer@example.com');
+    await page.fill('[data-testid="password"]', 'password123');
+    await page.click('[data-testid="login-button"]');
+
+    // 元の商品ページに戻ることを確認
+    await expect(page).toHaveURL(/\/catalog\/product-1/, { timeout: 10000 });
+
+    // 商品情報が正常に表示されることを確認
+    await expect(page.locator('[data-testid="product-name"]')).toBeVisible();
+    await expect(page.locator('[data-testid="add-to-cart-button"]')).toBeVisible();
+  });
+
+  test('ログイン後、カートに追加ボタンが正常に動作する', async ({ page }) => {
+    // 未ログインでカート追加を試行 → ログイン → 元ページ復帰の流れ
+    await page.goto('/catalog/product-1');
+    
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await addToCartButton.click();
+
+    // ログインページでログイン
+    await expect(page).toHaveURL(/\/login/);
+    await page.fill('[data-testid="email"]', 'buyer@example.com');
+    await page.fill('[data-testid="password"]', 'password123');
+    await page.click('[data-testid="login-button"]');
+
+    // 元のページに戻ったら、改めてカートに追加
+    await expect(page).toHaveURL(/\/catalog\/product-1/);
+    await addToCartButton.click();
+
+    // 今度は成功フィードバックが表示されることを確認
+    await expect(page.locator('[data-testid="success-message"]')).toContainText('カートに追加しました');
+
+    // ヘッダーのカート件数が更新されることを確認
+    await expect(page.locator('[data-testid="cart-count"]')).not.toHaveText('0');
+  });
+
+  test('未ログイン時のカートページアクセスでログインページにリダイレクトされる', async ({ page }) => {
+    // 未ログイン状態でカートページに直接アクセス
+    await page.goto('/cart');
+
+    // ログインページにリダイレクトされることを確認
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+
+    // returnToパラメータにカートURLが含まれることを確認
+    const currentUrl = page.url();
+    const decodedUrl = decodeURIComponent(currentUrl);
+    expect(decodedUrl).toContain('/cart');
+  });
+
+  test('複数の商品ページでリダイレクト機能が正常動作する', async ({ page }) => {
+    // 複数の商品で同じ動作を確認
+    const productIds = ['product-1', 'product-2', 'product-3'];
+
+    for (const productId of productIds) {
+      // 各商品ページに移動
+      await page.goto(/catalog/);
+
+      // カートに追加を試行
+      const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+      await addToCartButton.click();
+
+      // ログインページにリダイレクトされることを確認
+      await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+
+      // returnToパラメータに正しい商品URLが含まれることを確認
+      const currentUrl = page.url();
+      const decodedUrl = decodeURIComponent(currentUrl);
+      expect(decodedUrl).toContain(/catalog/);
+
+      // 次のテストのためにブラウザを初期状態に戻す
+      await page.goto('/');
+    }
+  });
+
+  test('リダイレクト中にカートに追加ボタンが無効化される', async ({ page }) => {
+    // 商品詳細ページに移動
+    await page.goto('/catalog/product-1');
+
+    // カートに追加ボタンをクリック
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await addToCartButton.click();
+
+    // リダイレクト処理中にボタンが無効化されることを確認
+    await expect(addToCartButton).toBeDisabled();
+
+    // リダイレクトメッセージの確認
+    await expect(page.locator('text=ログインページに移動します')).toBeVisible();
+  });
+
+  test('他のエラー（在庫切れなど）ではリダイレクトしない', async ({ page }) => {
+    // 在庫切れ商品の詳細ページに移動
+    await page.goto('/catalog/out-of-stock-product');
+
+    // カートに追加ボタンが無効化されていることを確認（リダイレクトではない）
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await expect(addToCartButton).toBeDisabled();
+    await expect(addToCartButton).toContainText('在庫切れ');
+
+    // ページがリダイレクトされないことを確認
+    await expect(page).toHaveURL(/\/catalog\/out-of-stock-product/);
+  });
+
+  test('ページリロード後もreturnTo機能が動作する', async ({ page }) => {
+    // 商品詳細ページに移動してリロード
+    await page.goto('/catalog/product-1');
+    await page.reload();
+
+    // カートに追加を試行
+    const addToCartButton = page.locator('[data-testid="add-to-cart-button"]');
+    await addToCartButton.click();
+
+    // ログインページにリダイレクトされることを確認
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+
+    // returnToパラメータが正しく設定されることを確認
+    const currentUrl = page.url();
+    const decodedUrl = decodeURIComponent(currentUrl);
+    expect(decodedUrl).toContain('/catalog/product-1');
+  });
+
+  test('直接ログインページアクセス時はreturnToパラメータがない', async ({ page }) => {
+    // ログインページに直接アクセス
+    await page.goto('/login');
+
+    // URLにreturnToパラメータが含まれないことを確認
+    expect(page.url()).not.toContain('returnTo');
+
+    // ログイン後はホームページまたはデフォルトページに遷移
+    await page.fill('[data-testid="email"]', 'buyer@example.com');
+    await page.fill('[data-testid="password"]', 'password123');
+    await page.click('[data-testid="login-button"]');
+
+    // ホームページまたはダッシュボードに遷移することを確認
+    await expect(page).toHaveURL(/\//, { timeout: 10000 });
+  });
+});

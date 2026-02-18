@@ -2,8 +2,8 @@
  * Cart ドメイン - ユースケース
  * カート関連のビジネスロジック
  */
-import type { Session } from '@/foundation/auth/session';
-import { authorize, AuthorizationError } from '@/foundation/auth/authorize';
+import type { SessionData } from '@/foundation/auth/session';
+import { authorize, AuthorizationError, AuthenticationError } from '@/foundation/auth/authorize';
 import { validate, ValidationError } from '@/foundation/validation/runtime';
 import {
   GetCartInputSchema,
@@ -25,13 +25,14 @@ import {
 
 // 既存の外部参照を維持するための再エクスポート
 export type { CartRepository, ProductFetcher } from '@/contracts/cart';
+export { AuthenticationError } from '@/foundation/auth/authorize';
 
 // ─────────────────────────────────────────────────────────────────
 // コンテキスト
 // ─────────────────────────────────────────────────────────────────
 
 export interface CartContext {
-  session: Session;
+  session: SessionData | null;
   repository: CartRepository;
   productFetcher: ProductFetcher;
 }
@@ -91,10 +92,12 @@ export async function getCart(
   authorize(context.session, 'buyer');
   validate(GetCartInputSchema, rawInput);
 
-  let cart = await context.repository.findByUserId(context.session.userId);
+  // session is guaranteed to be non-null after authorize check
+  const session = context.session!;
+  let cart = await context.repository.findByUserId(session.userId);
 
   if (!cart) {
-    cart = await context.repository.create(context.session.userId);
+    cart = await context.repository.create(session.userId);
   }
 
   return enrichCartWithTax(cart);
@@ -111,6 +114,9 @@ export async function addToCart(
   authorize(context.session, 'buyer');
 
   const input = validate(AddToCartInputSchema, rawInput);
+
+  // session is guaranteed to be non-null after authorize check
+  const session = context.session!;
 
   // 商品存在確認
   const product = await context.productFetcher.findById(input.productId);
@@ -129,7 +135,7 @@ export async function addToCart(
   }
 
   // 既存カート確認して同一商品の場合は数量制限チェック
-  const existingCart = await context.repository.findByUserId(context.session.userId);
+  const existingCart = await context.repository.findByUserId(session.userId);
   if (existingCart) {
     const existingItem = existingCart.items.find(item => item.productId === input.productId);
     if (existingItem) {
@@ -140,7 +146,7 @@ export async function addToCart(
     }
   }
 
-  const cart = await context.repository.addItem(context.session.userId, {
+  const cart = await context.repository.addItem(session.userId, {
     productId: product.id,
     productName: product.name,
     price: product.price,
@@ -163,7 +169,10 @@ export async function updateCartItem(
 
   const input = validate(UpdateCartItemInputSchema, rawInput);
 
-  const existingCart = await context.repository.findByUserId(context.session.userId);
+  // session is guaranteed to be non-null after authorize check
+  const session = context.session!;
+
+  const existingCart = await context.repository.findByUserId(session.userId);
   if (!existingCart) {
     throw new CartItemNotFoundError(input.productId);
   }
@@ -175,12 +184,15 @@ export async function updateCartItem(
 
   // 在庫チェック
   const product = await context.productFetcher.findById(input.productId);
-  if (product?.stock !== undefined && input.quantity > product.stock) {
+  if (!product) {
+    throw new NotFoundError('商品が見つかりません');
+  }
+  if (product.stock !== undefined && input.quantity > product.stock) {
     throw new StockError(`在庫数を超えています。在庫数: ${product.stock}`);
   }
 
   const cart = await context.repository.updateItemQuantity(
-    context.session.userId,
+    session.userId,
     input.productId,
     input.quantity
   );
@@ -200,7 +212,10 @@ export async function removeFromCart(
 
   const input = validate(RemoveFromCartInputSchema, rawInput);
 
-  const existingCart = await context.repository.findByUserId(context.session.userId);
+  // session is guaranteed to be non-null after authorize check
+  const session = context.session!;
+
+  const existingCart = await context.repository.findByUserId(session.userId);
   if (!existingCart) {
     throw new CartItemNotFoundError(input.productId);
   }
@@ -210,7 +225,7 @@ export async function removeFromCart(
     throw new CartItemNotFoundError(input.productId);
   }
 
-  const cart = await context.repository.removeItem(context.session.userId, input.productId);
+  const cart = await context.repository.removeItem(session.userId, input.productId);
 
   return enrichCartWithTax(cart);
 }

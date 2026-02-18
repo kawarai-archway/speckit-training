@@ -13,7 +13,22 @@ const ROLE_HIERARCHY: Record<Role, Role[]> = {
 };
 
 /**
- * 認可失敗エラー
+ * 認証失敗エラー（401 Unauthorized）
+ */
+export class AuthenticationError extends Error {
+  public readonly shouldRedirectToLogin = true;
+  public readonly loginUrl = '/login';
+  public readonly status = 401;
+  public readonly code = 'AUTHENTICATION_REQUIRED';
+
+  constructor(message = 'Authentication required') {
+    super(message);
+    this.name = 'AuthenticationError';
+  }
+}
+
+/**
+ * 認可失敗エラー（403 Forbidden）
  */
 export class ForbiddenError extends Error {
   constructor(message = 'この操作を行う権限がありません') {
@@ -35,16 +50,17 @@ export function hasRole(session: SessionData, requiredRole: Role): boolean {
 
 /**
  * 認可チェックを行う
- * @param session セッションデータ
+ * @param session セッションデータ（nullの場合は未認証）
  * @param requiredRole 必要なロール（単一または複数）
- * @throws ForbiddenError 認可失敗時
+ * @throws AuthenticationError 未認証時（401）
+ * @throws ForbiddenError 認可失敗時（403）
  */
 export function authorize(
-  session: SessionData,
+  session: SessionData | null,
   requiredRole: Role | Role[]
 ): void {
   if (!session) {
-    throw new ForbiddenError('セッションが無効です');
+    throw new AuthenticationError('Authentication required');
   }
 
   const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
@@ -78,7 +94,9 @@ export function defineAuthorization<T extends Record<string, AuthorizeMetadata>>
 export type { Role };
 
 /**
- * 認可エラー（ForbiddenErrorのエイリアス）
+ * 認可エラー（AuthenticationError と ForbiddenError の統合）
  */
 export const AuthorizationError = ForbiddenError;
 export type AuthorizationError = ForbiddenError;
+
+// Note: AuthenticationError is already exported above as a class

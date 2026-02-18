@@ -19,6 +19,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const fetchProduct = useCallback(async () => {
     setIsLoading(true);
@@ -59,7 +60,13 @@ export default function ProductDetailPage() {
       if (!res.ok) {
         if (res.status === 401) {
           // 未認証の場合はログインページにリダイレクト
-          window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+          setIsRedirecting(true);
+          const currentUrl = `${window.location.pathname}${window.location.search}`;
+          
+          // リダイレクトメッセージを一時的に表示
+          setTimeout(() => {
+            window.location.href = `/login?returnTo=${encodeURIComponent(currentUrl)}`;
+          }, 1000);
           return;
         }
         throw new Error(data.error?.message || 'カートへの追加に失敗しました');
@@ -75,6 +82,16 @@ export default function ProductDetailPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* リダイレクト中のメッセージ */}
+      {isRedirecting && (
+        <div 
+          className="mb-4 rounded-md bg-blue-50 p-3 text-blue-800 border border-blue-200"
+          aria-live="polite"
+        >
+          ログインページに移動します...
+        </div>
+      )}
+      
       <ProductDetail
         product={product}
         isLoading={isLoading}

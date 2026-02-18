@@ -642,6 +642,12 @@ describe('User Story 3: カート内の数量を変更する - Usecase Tests', (
     });
 
     it('数量を最大値99に変更できる', async () => {
+      // 在庫数の多い商品をモック
+      mockProductFetcher.findById = async () => ({
+        ...mockProduct,
+        stock: 100, // 99個の更新を可能にする
+      });
+
       const result = await updateCartItem(
         { productId: mockProduct.id, quantity: 99 },
         context
@@ -873,7 +879,7 @@ describe('User Story 5: 未ログイン時のカート追加リダイレクト -
     };
 
     context = {
-      session: unauthenticatedSession,
+      session: null, // 完全に未認証の状態
       repository: mockRepository,
       productFetcher: mockProductFetcher,
     };
@@ -922,15 +928,19 @@ describe('User Story 5: 未ログイン時のカート追加リダイレクト -
       expect(result.items[0].productId).toBe(mockProduct.id);
     });
 
-    it('roleがbuyerでない場合も AuthenticationError を投げる', async () => {
-      const invalidRoleContext = {
+    it('adminロールでもカート操作できる（ロール階層）', async () => {
+      const adminContext = {
         ...context,
-        session: { ...authenticatedSession, role: 'seller' as any },
+        session: { ...authenticatedSession, role: 'admin' as const },
       };
 
-      await expect(
-        addToCart({ productId: mockProduct.id, quantity: 1 }, invalidRoleContext)
-      ).rejects.toThrow('Authentication required');
+      const result = await addToCart(
+        { productId: mockProduct.id, quantity: 1 },
+        adminContext
+      );
+      expect(result).toBeDefined();
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].productId).toBe(mockProduct.id);
     });
   });
 

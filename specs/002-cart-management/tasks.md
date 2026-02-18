@@ -146,33 +146,33 @@
 
 > **テスト種別**: ユースケース単体・UI コンポーネント単体・API 統合・E2E
 
-- [ ] T033 [P] [US3] Create update quantity usecase unit test in tests/unit/domains/cart/usecase.test.ts
-- [ ] T034 [P] [US3] Create quantity input component unit test in tests/unit/domains/cart/ui.test.tsx
-- [ ] T035 [P] [US3] Create cart item update API integration test in tests/integration/domains/cart/api.test.ts
-- [ ] T036 [P] [US3] Create quantity change E2E test in tests/e2e/cart-buyer-flow.spec.ts
+- [x] T033 [P] [US3] Create update quantity usecase unit test in tests/unit/domains/cart/usecase.test.ts
+- [x] T034 [P] [US3] Create quantity input component unit test in tests/unit/domains/cart/ui.test.tsx
+- [x] T035 [P] [US3] Create cart item update API integration test in tests/integration/domains/cart/api.test.ts
+- [x] T036 [P] [US3] Create quantity change E2E test in tests/e2e/cart-buyer-flow.spec.ts
 
 ### Green: 最小実装
 
 > Red で作成した失敗テストをパスさせる最低限のコードを記述する。
 > 実装完了後、必ず全テストを実行しパスすることを検証する（パス件数 0 件はエラー）。
 
-- [ ] T037 [P] [US3] Implement updateCartItemQuantity usecase with stock validation in src/domains/cart/api/usecases.ts
-- [ ] T038 [P] [US3] Add quantity input controls to CartView component in src/domains/cart/ui/CartView.tsx
-- [ ] T039 [US3] Implement instant recalculation on quantity change in src/domains/cart/ui/CartView.tsx
-- [ ] T040 [US3] Add quantity validation (1-99, stock limit) with error display in src/domains/cart/ui/CartView.tsx
-- [ ] T041 [US3] 全テスト実行・パス確認（Red テストが全てパスすることを検証）
+- [x] T037 [P] [US3] Implement updateCartItemQuantity usecase with stock validation in src/domains/cart/api/usecases.ts
+- [x] T038 [P] [US3] Add quantity input controls to CartView component in src/domains/cart/ui/CartView.tsx
+- [x] T039 [US3] Implement instant recalculation on quantity change in src/domains/cart/ui/CartView.tsx
+- [x] T040 [US3] Add quantity validation (1-99, stock limit) with error display in src/domains/cart/ui/CartView.tsx
+- [x] T041 [US3] 全テスト実行・パス確認（Red テストが全てパスすることを検証）
 
 ### Refactor: 改善
 
 > 重複排除・命名改善・責務分離。全テストパスを検証する。
 
-- [ ] T042 [US3] リファクタリングと全テストパス確認
+- [x] T042 [US3] リファクタリングと全テストパス確認
 
 ### 検証: E2Eテスト実行 + カバレッジ確認
 
 > E2E 実行証跡 + カバレッジ 80% 以上確認 + 外部 URL 検証
 
-- [ ] T043 [US3] E2E テスト実行（証跡付き）+ カバレッジ確認
+- [x] T043 [US3] E2E テスト実行（証跡付き）+ カバレッジ確認
 
 **Checkpoint**: User Stories 1, 2, and 3 should all work independently
 
@@ -230,32 +230,32 @@
 
 > **テスト種別**: ユースケース単体・UI コンポーネント単体・API 統合・E2E
 
-- [ ] T055 [P] [US5] Create authentication redirect logic unit test in tests/unit/domains/cart/usecase.test.ts
-- [ ] T056 [P] [US5] Create unauthenticated state handling unit test in tests/unit/domains/cart/ui.test.tsx
-- [ ] T057 [P] [US5] Create 401 response handling integration test in tests/integration/domains/cart/api.test.ts
-- [ ] T058 [P] [US5] Create login redirect E2E test in tests/e2e/cart-buyer-flow.spec.ts
+- [x] T055 [P] [US5] Create authentication redirect logic unit test in tests/unit/domains/cart/usecase.test.ts
+- [x] T056 [P] [US5] Create unauthenticated state handling unit test in tests/unit/domains/cart/ui.test.tsx
+- [x] T057 [P] [US5] Create 401 response handling integration test in tests/integration/domains/cart/api.test.ts
+- [x] T058 [P] [US5] Create login redirect E2E test in tests/e2e/cart-buyer-flow.spec.ts
 
 ### Green: 最小実装
 
 > Red で作成した失敗テストをパスさせる最低限のコードを記述する。
 > 実装完了後、必ず全テストを実行しパスすることを検証する（パス件数 0 件はエラー）。
 
-- [ ] T059 [P] [US5] Add 401 error handling to cart usecases in src/domains/cart/api/usecases.ts
-- [ ] T060 [US5] Implement login redirect with returnTo parameter in src/app/(buyer)/catalog/[id]/page.tsx
-- [ ] T061 [US5] Add authentication check before cart operations in src/app/(buyer)/catalog/[id]/page.tsx
-- [ ] T062 [US5] 全テスト実行・パス確認（Red テストが全てパスすることを検証）
+- [x] T059 [P] [US5] Add 401 error handling to cart usecases in src/domains/cart/api/usecases.ts
+- [x] T060 [US5] Implement login redirect with returnTo parameter in src/app/(buyer)/catalog/[id]/page.tsx
+- [x] T061 [US5] Add authentication check before cart operations in src/app/(buyer)/catalog/[id]/page.tsx
+- [x] T062 [US5] 全テスト実行・パス確認（Red テストが全てパスすることを検証）
 
 ### Refactor: 改善
 
 > 重複排除・命名改善・責務分離。全テストパスを検証する。
 
-- [ ] T063 [US5] リファクタリングと全テストパス確認
+- [x] T063 [US5] リファクタリングと全テストパス確認
 
 ### 検証: E2Eテスト実行 + カバレッジ確認
 
 > E2E 実行証跡 + カバレッジ 80% 以上確認 + 外部 URL 検証
 
-- [ ] T064 [US5] E2E テスト実行（証跡付き）+ カバレッジ確認
+- [x] T064 [US5] E2E テスト実行（証跡付き）+ カバレッジ確認
 
 **Checkpoint**: User Stories 1-5 should all work independently
 
@@ -271,32 +271,32 @@
 
 > **テスト種別**: ユースケース単体・UI コンポーネント単体・API 統合・E2E
 
-- [ ] T065 [P] [US6] Create cart persistence usecase unit test in tests/unit/domains/cart/usecase.test.ts
-- [ ] T066 [P] [US6] Create cart state restoration unit test in tests/unit/domains/cart/ui.test.tsx
-- [ ] T067 [P] [US6] Create session persistence integration test in tests/integration/domains/cart/api.test.ts
-- [ ] T068 [P] [US6] Create persistence across navigation E2E test in tests/e2e/cart-buyer-flow.spec.ts
+- [x] T065 [P] [US6] Create cart persistence usecase unit test in tests/unit/domains/cart/usecase.test.ts
+- [x] T066 [P] [US6] Create cart state restoration unit test in tests/unit/domains/cart/ui.test.tsx
+- [x] T067 [P] [US6] Create session persistence integration test in tests/integration/domains/cart/api.test.ts
+- [x] T068 [P] [US6] Create persistence across navigation E2E test in tests/e2e/cart-buyer-flow.spec.ts
 
 ### Green: 最小実装
 
 > Red で作成した失敗テストをパスさせる最低限のコードを記述する。
 > 実装完了後、必ず全テストを実行しパスすることを検証する（パス件数 0 件はエラー）。
 
-- [ ] T069 [P] [US6] Verify in-memory store persistence works with existing implementation in src/infrastructure/repositories/cart.ts
-- [ ] T070 [P] [US6] Add cart state restoration on page load in src/domains/cart/ui/CartView.tsx
-- [ ] T071 [US6] Test persistence across browser sessions and page navigation in src/app/(buyer)/cart/page.tsx
-- [ ] T072 [US6] 全テスト実行・パス確認（Red テストが全てパスすることを検証）
+- [X] T069 [P] [US6] Verify in-memory store persistence works with existing implementation in src/infrastructure/repositories/cart.ts
+- [X] T070 [P] [US6] Add cart state restoration on page load in src/domains/cart/ui/CartView.tsx
+- [X] T071 [US6] Test persistence across browser sessions and page navigation in src/app/(buyer)/cart/page.tsx
+- [X] T072 [US6] 全テスト実行・パス確認（Red テストが全てパスすることを検証）
 
 ### Refactor: 改善
 
 > 重複排除・命名改善・責務分離。全テストパスを検証する。
 
-- [ ] T073 [US6] リファクタリングと全テストパス確認
+- [X] T073 [US6] リファクタリングと全テストパス確認
 
 ### 検証: E2Eテスト実行 + カバレッジ確認
 
 > E2E 実行証跡 + カバレッジ 80% 以上確認 + 外部 URL 検証
 
-- [ ] T074 [US6] E2E テスト実行（証跡付き）+ カバレッジ確認
+- [X] T074 [US6] E2E テスト実行（証跡付き）+ カバレッジ確認
 
 **Checkpoint**: All user stories should now be independently functional
 

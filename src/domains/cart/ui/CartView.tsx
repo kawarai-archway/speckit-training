@@ -140,11 +140,12 @@ function CartItemRow({
 
       {/* 削除確認ダイアログ */}
       <ConfirmDialog
-        isOpen={showDeleteConfirm}
+        open={showDeleteConfirm}
         title="商品をカートから削除"
         message={`${item.productName}をカートから削除しますか？`}
-        confirmText="削除"
-        cancelText="キャンセル"
+        confirmLabel="削除"
+        cancelLabel="キャンセル"
+        variant="danger"
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
@@ -171,7 +172,7 @@ export function CartView({
   }
 
   // 空状態
-  if (!cart || cart.items.length === 0) {
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <Empty 
         message="カートに商品がありません" 
@@ -232,6 +233,7 @@ export function CartView({
           <button
             type="button"
             onClick={onCheckout}
+            data-testid="checkout-button"
             className="mt-6 w-full rounded-md bg-base-900 px-6 py-3 text-base font-medium text-base-50 hover:bg-base-900/90 focus:outline-none focus:ring-2 focus:ring-base-900 focus:ring-offset-2"
           >
             注文手続きへ

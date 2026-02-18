@@ -684,8 +684,16 @@ describe('User Story 2: カート内容を確認する - GET /api/cart', () => {
  */
 describe('User Story 4: カートから商品を削除する - DELETE /api/cart/items/:productId', () => {
   const API_BASE = 'http://localhost:3000';
+  let originalFetch: any;
 
   beforeEach(() => {
+    // Setup fetch mock
+    originalFetch = global.fetch;
+    global.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
     vi.clearAllMocks();
   });
 
@@ -1013,6 +1021,74 @@ describe('User Story 4: カートから商品を削除する - DELETE /api/cart/
       expect(data).toHaveProperty('error');
       expect(data.error).toHaveProperty('code');
       expect(data.error).toHaveProperty('message');
+    });
+  });
+});
+
+/**
+ * User Story 5: 未ログイン時のカート追加リダイレクト - Integration Tests
+ * TDD Red Phase - これらのテストは最初は FAIL する必要がある
+ */
+describe("User Story 5: 未ログイン時のカート追加リダイレクト - Integration Tests", () => {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  let originalFetch: any;
+
+  beforeEach(() => {
+    // Setup fetch mock
+    originalFetch = global.fetch;
+    global.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.clearAllMocks();
+  });
+
+  describe("未認証でのカート操作", () => {
+    it("未認証でGET /api/cartにアクセスすると401エラー", async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve({
+          success: false,
+          error: {
+            code: "AUTHENTICATION_REQUIRED",
+            message: "Authentication required",
+          },
+        }),
+      });
+
+      const response = await fetch(`${API_BASE}/api/cart`);
+
+      expect(response.status).toBe(401);
+      const data = await response.json();
+      expect(data.success).toBe(false);
+      expect(data.error.code).toBe("AUTHENTICATION_REQUIRED");
+    });
+
+    it("未認証でPOST /api/cart/itemsにアクセスすると401エラー", async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve({
+          success: false,
+          error: {
+            code: "AUTHENTICATION_REQUIRED",
+            message: "Authentication required",
+          },
+        }),
+      });
+
+      const response = await fetch(`${API_BASE}/api/cart/items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: "product-1", quantity: 1 }),
+      });
+
+      expect(response.status).toBe(401);
+      const data = await response.json();
+      expect(data.success).toBe(false);
+      expect(data.error.code).toBe("AUTHENTICATION_REQUIRED");
     });
   });
 });
