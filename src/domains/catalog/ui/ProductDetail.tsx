@@ -2,9 +2,9 @@
 
 /**
  * ProductDetail コンポーネント（本番）
- * 商品詳細表示 — 在庫数表示、カート追加ボタンの有効/無効対応
+ * 商品詳細表示 — 在庫数表示、カート追加ボタンの有効/無効対応、フィードバック機能
  */
-import React from 'react';
+import React, { useState } from 'react';
 import type { Product } from '@/contracts/catalog';
 import { Loading } from '@/templates/ui/components/status/Loading';
 import { Error } from '@/templates/ui/components/status/Error';
@@ -13,7 +13,7 @@ export interface ProductDetailProps {
   product: Product | null;
   isLoading: boolean;
   error?: string;
-  onAddToCart?: (productId: string) => void;
+  onAddToCart?: (productId: string) => Promise<void>;
   onBack?: () => void;
 }
 
@@ -28,19 +28,56 @@ export function ProductDetail({
   onAddToCart,
   onBack,
 }: ProductDetailProps) {
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   if (isLoading) {
     return <Loading message="商品情報を読み込み中..." />;
   }
 
   if (error) {
-    return <Error message={error} />;
+    return <Error message={error} data-testid="error-message" />;
   }
 
   if (!product) {
-    return <Error message="商品が見つかりません" />;
+    return <Error message="商品が見つかりません" data-testid="error-message" />;
   }
 
   const isOutOfStock = product.stock === 0;
+
+  const handleAddToCart = async () => {
+    if (!onAddToCart || addingToCart) return;
+
+    try {
+      setAddingToCart(true);
+      setFeedback(null);
+      
+      await onAddToCart(product.id);
+      
+      setFeedback({
+        type: 'success',
+        message: 'カートに追加しました',
+      });
+      
+      // 3秒後にフィードバックをクリア
+      setTimeout(() => setFeedback(null), 3000);
+    } catch (error: any) {
+      let message = 'カートへの追加に失敗しました';
+      
+      if (error.status === 401) {
+        message = 'ログインが必要です';
+      } else if (error.message) {
+        message = error.message;
+      }
+      
+      setFeedback({
+        type: 'error',
+        message,
+      });
+    } finally {
+      setAddingToCart(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -69,6 +106,7 @@ export function ProductDetail({
             <img
               src={product.imageUrl}
               alt={product.name}
+              data-testid="product-image"
               className="aspect-square w-full rounded-lg object-cover"
             />
           ) : (
@@ -95,28 +133,55 @@ export function ProductDetail({
 
         {/* 商品情報 */}
         <div>
-          <h1 className="text-3xl font-bold text-base-900">{product.name}</h1>
-          <p className="mt-4 text-3xl font-bold text-base-900">{formatPrice(product.price)}</p>
+          <h1 className="text-3xl font-bold text-base-900" data-testid="product-name">
+            {product.name}
+          </h1>
+          <p className="mt-4 text-3xl font-bold text-base-900" data-testid="product-price">
+            {formatPrice(product.price)}
+          </p>
 
-          <p className="mt-2 text-sm text-base-900/60">
-            {isOutOfStock ? '在庫切れ' : `在庫: ${product.stock}`}
+          <p 
+            className="mt-2 text-sm text-base-900/60" 
+            data-testid="stock-status"
+            aria-live="polite"
+          >
+            {isOutOfStock ? '在庫切れ' : product.stock !== undefined ? `在庫: ${product.stock}個` : ''}
           </p>
 
           {product.description && (
             <div className="mt-6">
               <h2 className="text-sm font-medium text-base-900/60">商品説明</h2>
-              <p className="mt-2 text-base-900/80">{product.description}</p>
+              <p className="mt-2 text-base-900/80" data-testid="product-description">
+                {product.description}
+              </p>
+            </div>
+          )}
+
+          {/* フィードバックメッセージ */}
+          {feedback && (
+            <div
+              className={`mt-4 rounded-md p-3 ${
+                feedback.type === 'success' 
+                  ? 'bg-green-50 text-green-800 border border-green-200' 
+                  : 'bg-red-50 text-red-800 border border-red-200'
+              }`}
+              data-testid={feedback.type === 'success' ? 'success-message' : 'error-message'}
+              aria-live="polite"
+            >
+              {feedback.message}
             </div>
           )}
 
           {onAddToCart && (
             <button
               type="button"
-              onClick={() => onAddToCart(product.id)}
-              disabled={isOutOfStock}
+              onClick={handleAddToCart}
+              disabled={isOutOfStock || addingToCart}
+              data-testid="add-to-cart-button"
+              aria-label={`${product.name}をカートに追加`}
               className="mt-8 w-full rounded-md bg-base-900 px-6 py-3 text-base font-medium text-base-50 hover:bg-base-900/90 focus:outline-none focus:ring-2 focus:ring-base-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              カートに追加
+              {addingToCart ? '追加中...' : isOutOfStock ? '在庫切れ' : 'カートに追加'}
             </button>
           )}
         </div>

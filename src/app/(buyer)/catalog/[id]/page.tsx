@@ -48,14 +48,28 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async (productId: string) => {
     try {
-      await fetch('/api/cart', {
+      const res = await fetch('/api/cart/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: 1 }),
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          // 未認証の場合はログインページにリダイレクト
+          window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+          return;
+        }
+        throw new Error(data.error?.message || 'カートへの追加に失敗しました');
+      }
+
+      // カート更新イベントを発火
       window.dispatchEvent(new Event('cart-updated'));
-    } catch {
-      // cart API may not be implemented yet
+    } catch (error) {
+      console.error('Cart add failed:', error);
+      throw error;
     }
   };
 

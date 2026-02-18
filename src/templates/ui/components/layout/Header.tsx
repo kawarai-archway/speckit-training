@@ -84,6 +84,7 @@ export function Header({
               href={cartUrl}
               className="relative flex items-center text-base-900/70 hover:text-base-900"
               aria-label="カート"
+              data-testid="cart-link"
             >
               <svg
                 className="h-6 w-6"

@@ -274,6 +274,7 @@ export const EXTENSION_PRODUCTS: Product[] = [
     name: 'プレミアムTシャツ',
     price: 9800,
     description: 'スーピマコットンを使用した最高級Tシャツ。極上の着心地を実現しました。',
+    imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
     stock: 16,
     status: 'published',
     createdAt: new Date('2024-02-18'),

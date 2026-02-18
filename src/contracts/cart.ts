@@ -13,7 +13,7 @@ export const CartItemSchema = z.object({
   productName: z.string(),
   price: z.number().int().min(0),
   imageUrl: z.string().url().optional(),
-  quantity: z.number().int().min(1),
+  quantity: z.number().int().min(1).max(99),
   addedAt: z.coerce.date(),
 });
 export type CartItem = z.infer<typeof CartItemSchema>;
@@ -27,6 +27,10 @@ export const CartSchema = z.object({
   items: z.array(CartItemSchema),
   /** 小計 */
   subtotal: z.number().int().min(0),
+  /** 消費税（subtotal × 10%、端数切り捨て） */
+  tax: z.number().int().min(0).optional().default(0),
+  /** 総合計（subtotal + tax） */
+  total: z.number().int().min(0).optional().default(0),
   /** 商品数（items の quantity 合計） */
   itemCount: z.number().int().min(0),
   createdAt: z.coerce.date(),
@@ -59,7 +63,7 @@ export type GetCartOutput = z.infer<typeof GetCartOutputSchema>;
  */
 export const AddToCartInputSchema = z.object({
   productId: z.string().uuid('有効な商品IDを指定してください'),
-  quantity: z.number().int().min(1, '数量は1以上で指定してください').default(1),
+  quantity: z.number().int().min(1, '数量は1以上で指定してください').max(99, '数量は99以下で指定してください').default(1),
 });
 export type AddToCartInput = z.infer<typeof AddToCartInputSchema>;
 
@@ -78,7 +82,7 @@ export type AddToCartOutput = z.infer<typeof AddToCartOutputSchema>;
  */
 export const UpdateCartItemInputSchema = z.object({
   productId: z.string().uuid(),
-  quantity: z.number().int().min(1, '数量は1以上で指定してください'),
+  quantity: z.number().int().min(1, '数量は1以上で指定してください').max(99, '数量は99以下で指定してください'),
 });
 export type UpdateCartItemInput = z.infer<typeof UpdateCartItemInputSchema>;
 
@@ -131,5 +135,6 @@ export interface ProductFetcher {
     name: string;
     price: number;
     imageUrl?: string;
+    stock?: number;
   } | null>;
 }
