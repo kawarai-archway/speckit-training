@@ -11,6 +11,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-07
 - TypeScript 5 (strict mode) + Next.js 14 (App Router), React 18, Zod, Tailwind CSS 3 (008-quality-guard)
 - インメモリストア（`globalThis` + `Map<string, T>`） (008-quality-guard)
 - N/A（Markdown テンプレート修正のみ） (009-green-test-mandatory)
+- インメモリストア（`globalThis` + `Map<string, T>`）— 既存の `src/infrastructure/repositories/cart.ts` (002-cart-management)
 
 
 
@@ -39,6 +40,7 @@ tests/
 General: Follow standard conventions
 
 ## Recent Changes
+- 002-cart-management: Added TypeScript 5 (strict mode) + Next.js 14 (App Router), React 18, Zod, Tailwind CSS 3
 - 009-green-test-mandatory: Added N/A（Markdown テンプレート修正のみ）
 - 008-quality-guard: Added TypeScript 5 (strict mode) + Next.js 14 (App Router), React 18, Zod, Tailwind CSS 3
 
