@@ -1,6 +1,6 @@
 /**
- * Catalog ドメイン - API スタブ実装
- * 本番実装で置き換え予定。すべての関数は NotImplementedError をスローする。
+ * Catalog ドメイン - API エクスポート
+ * 本番ユースケースを re-export する。未実装の操作は NotImplementedError をスローする。
  */
 
 /**
@@ -13,24 +13,10 @@ export class NotImplementedError extends Error {
   }
 }
 
-/**
- * リソース未存在エラー（スタブ）
- */
-export class NotFoundError extends Error {
-  constructor(message = 'リソースが見つかりません') {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
+// 本番ユースケース
+export { getProducts, getProductById, NotFoundError } from './usecases';
 
-export function getProducts(..._args: unknown[]): never {
-  throw new NotImplementedError('catalog', 'getProducts');
-}
-
-export function getProductById(..._args: unknown[]): never {
-  throw new NotImplementedError('catalog', 'getProductById');
-}
-
+// 未実装操作（スタブ維持）
 export function createProduct(..._args: unknown[]): never {
   throw new NotImplementedError('catalog', 'createProduct');
 }
